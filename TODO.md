@@ -1,5 +1,10 @@
-- glob files
+- glob files? or just lean on shell globs?
 - strip any imaginary windows support
+- performance
+  - is there a problem?
+  - things to try:
+    - concurrently requesting multiple file attr keys and values
+    - io_uring
 - Mac support?
 - options?
   - output data types?
