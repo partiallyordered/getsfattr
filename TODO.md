@@ -1,0 +1,11 @@
+- glob files
+- strip any imaginary windows support
+- Mac support?
+- options?
+  - output data types?
+    - table? ("raw text")?
+    - delimited (i.e. csv/ish)?
+    - s expressions?
+    - yaml?
+    - toml?
+    - or just let users use converters?
