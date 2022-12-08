@@ -1,4 +1,5 @@
 - glob files? or just lean on shell globs?
+- error handling. look at all those unwraps....
 - test
 - lint
 - GH Actions build/release
