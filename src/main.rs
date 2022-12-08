@@ -1,9 +1,10 @@
-use xattr;
 use clap::Parser;
+use serde::Serialize;
+use std::collections::HashMap;
+use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
 use std::str;
-use std::ffi::{OsStr, OsString};
-use std::collections::HashMap;
+use xattr;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -13,12 +14,14 @@ struct Args {
     files: Vec<PathBuf>,
     // TODO:
     // - ignore missing files
+    // - pretty-print output
+    // - attr filters?
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 struct FileAttrs {
     file_name: PathBuf,
-    attrs: HashMap<OsString, String>,
+    attrs: HashMap<String, String>,
 }
 
 fn main() {
@@ -30,12 +33,12 @@ fn main() {
             file_name: f.clone(),
             attrs: xattrs
                 .map(|attr| (
-                    attr.clone(),
+                    attr.clone().into_string().unwrap(),
                     str::from_utf8(&xattr::get::<&OsStr, &OsStr>(f.as_ref(), attr.as_ref()).unwrap().unwrap()).unwrap().to_owned()
                 ))
                 .collect(),
         }
     }).collect();
 
-    println!("{:?}", results);
+    println!("{}", serde_json::to_string(&results).unwrap());
 }
