@@ -1,4 +1,9 @@
 - glob files? or just lean on shell globs?
+- test
+- lint
+- GH Actions build/release
+- README
+- Check license is compatible with dependencies
 - strip any imaginary windows support
 - performance
   - is there a problem?
@@ -8,9 +13,7 @@
 - Mac support?
 - options?
   - output data types?
-    - table? ("raw text")?
-    - delimited (i.e. csv/ish)?
-    - s expressions?
-    - yaml?
-    - toml?
-    - or just let users use converters?
+    - https://serde.rs/#data-formats
+    - table? ("raw text")
+    - delimited (i.e. csv/ish)
+    - or just let users use CLI converters?
