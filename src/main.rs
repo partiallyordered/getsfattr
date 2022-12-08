@@ -15,7 +15,8 @@ struct Args {
     // TODO:
     // - ignore missing files
     // - pretty-print output
-    // - attr filters?
+    // - attr filters? (probably not- just do one thing well)
+    // - traversal options? (probably not- just do one thing well)
 }
 
 #[derive(Debug, Serialize)]

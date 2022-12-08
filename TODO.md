@@ -1,4 +1,5 @@
 - glob files? or just lean on shell globs?
+- stream output
 - error handling. look at all those unwraps....
 - test
 - lint
