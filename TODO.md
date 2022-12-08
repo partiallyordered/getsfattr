@@ -2,7 +2,6 @@
 - test
 - lint
 - GH Actions build/release
-- README
 - Check license is compatible with dependencies
 - strip any imaginary windows support
 - performance
