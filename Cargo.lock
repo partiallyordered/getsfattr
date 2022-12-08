@@ -5,3 +5,21 @@ version = 3
 [[package]]
 name = "getsfattr"
 version = "0.1.0"
+dependencies = [
+ "xattr",
+]
+
+[[package]]
+name = "libc"
+version = "0.2.138"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db6d7e329c562c5dfab7a46a2afabc8b987ab9a4834c9d1ca04dc54c1546cef8"
+
+[[package]]
+name = "xattr"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea263437ca03c1522846a4ddafbca2542d0ad5ed9b784909d4b27b76f62bc34a"
+dependencies = [
+ "libc",
+]

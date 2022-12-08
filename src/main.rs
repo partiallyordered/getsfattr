@@ -1,3 +1,14 @@
+use xattr;
+
 fn main() {
-    println!("Hello, world!");
+    let mut xattrs = xattr::list("./trash").unwrap().peekable();
+    if xattrs.peek().is_none() {
+        println!("no xattr set on root");
+        return;
+    }
+
+    println!("Extended attributes:");
+    for attr in xattrs {
+        println!(" - {:?}", attr);
+    }
 }
