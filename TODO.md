@@ -1,3 +1,10 @@
+- setsfattr
+  - take data in the same format we produce it from `getsfattr`
+- make cli like this (i.e. release three binaries: `sfattr`, `getsfattr` and `setfsattr`):
+  - getsfattr
+  - setsfattr
+  - sfattr get
+  - sfattr set
 - glob files? or just lean on shell globs?
 - stream output
 - error handling. look at all those unwraps....
@@ -18,3 +25,5 @@
     - table? ("raw text")
     - delimited (i.e. csv/ish)
     - or just let users use CLI converters?
+- man page
+- help text
