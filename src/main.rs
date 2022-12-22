@@ -1,7 +1,7 @@
 use clap::Parser;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::str;
 use xattr;
