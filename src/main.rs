@@ -10,6 +10,7 @@ use futures::StreamExt;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
+/// Get extended file attributes as JSON
 struct Args {
     /// Target files
     #[arg(required = true)]
