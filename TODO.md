@@ -8,7 +8,6 @@
     - support something like setfattr set --kv key=value key2=value2 key3=value3?
     - read `man setfattr` on `-v` value encoding and `-x` attribute removal
 - glob files? or just lean on shell globs?
-- stream output
 - error handling. look at all those unwraps....
 - test
 - lint
@@ -18,8 +17,10 @@
 - performance
   - is there a problem?
   - things to try:
-    - concurrently requesting multiple file attr keys and values
     - io_uring
+      - not cross-platform- also, my understanding is that this is for queueing dependent syscalls,
+          not necessarily for concurrently processing a large number of syscalls, so the advantage
+          it *might* have is to remove or amortise syscall overhead for multiple syscalls
 - Mac support?
 - options?
   - output data types?

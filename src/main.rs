@@ -20,6 +20,7 @@ struct Args {
     // - pretty-print output
     // - attr filters? (probably not- just do one thing well)
     // - traversal options? (probably not- just do one thing well)
+    // - take files as json input in some form? (similar to our output form..?)
 }
 
 #[derive(Debug, Serialize)]
