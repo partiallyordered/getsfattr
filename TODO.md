@@ -8,7 +8,6 @@
     - support something like setfattr set --kv key=value key2=value2 key3=value3?
     - read `man setfattr` on `-v` value encoding and `-x` attribute removal
 - glob files? or just lean on shell globs?
-- error handling. look at all those unwraps....
 - test
 - lint
 - GH Actions build/release
