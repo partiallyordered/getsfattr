@@ -54,15 +54,15 @@ fn build_attr_json_str_for_file(file_name: PathBuf) -> Result<String> {
     let valid_utf8_xattr_names = xattr_names.filter_map(|xattr_name| xattr_name.into_string().ok());
 
     let valid_utf8_attrs = valid_utf8_xattr_names.filter_map(|xattr_name| {
-            match xattr::get::<&OsStr, &OsStr>(file_name.as_ref(), xattr_name.as_ref()) {
-                Err(e) => Some(Err(Error::GetExtAttrValue(xattr_name, file_name.clone(), e))),
-                Ok(Some(xattr_value)) => match str::from_utf8(&xattr_value) {
-                    Err(_) => None, // filter out non-utf-8-representable attribute values
-                    Ok(val) => Some(Ok((xattr_name, val.to_owned()))),
-                },
-                Ok(None) => Some(Err(Error::NoExtAttrValue(xattr_name, file_name.clone())))
-            }
-        }).collect::<Result<FileAttrsMap>>()?;
+        match xattr::get::<&OsStr, &OsStr>(file_name.as_ref(), xattr_name.as_ref()) {
+            Err(e) => Some(Err(Error::GetExtAttrValue(xattr_name, file_name.clone(), e))),
+            Ok(Some(xattr_value)) => match str::from_utf8(&xattr_value) {
+                Err(_) => None, // filter out non-utf-8-representable attribute values
+                Ok(val) => Some(Ok((xattr_name, val.to_owned()))),
+            },
+            Ok(None) => Some(Err(Error::NoExtAttrValue(xattr_name, file_name.clone())))
+        }
+    }).collect::<Result<FileAttrsMap>>()?;
 
     serde_json::to_string(&(FileAttrs {
         file_name: &file_name,
