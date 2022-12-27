@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::ffi::OsStr;
@@ -10,10 +10,19 @@ use futures::stream::FuturesOrdered;
 use futures::StreamExt;
 use thiserror::Error;
 
+#[derive(ValueEnum, Clone, Debug, Copy)]
+enum Encoding {
+    Escaped,
+    Base64,
+    Utf8,
+}
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 /// Get extended file attributes as JSON
 struct Args {
+    #[arg(short, long, default_value="escaped")]
+    encoding: Encoding,
     /// Target files
     #[arg(required = true)]
     files: Vec<PathBuf>,
@@ -47,7 +56,36 @@ enum Error {
 
 type Result<T> = std::result::Result<T, Error>;
 
-fn build_attr_json_str_for_file(file_name: PathBuf) -> Result<String> {
+fn encode_xattr_value(
+    xattr_name: String, xattr_value: Vec<u8>, value_encoding: Encoding
+) -> Option<Result<(String, String)>> {
+    match value_encoding {
+        Encoding::Utf8 => match str::from_utf8(&xattr_value) {
+            // Returning `None` filters out non-utf-8-representable attribute values.
+            // TODO: give the user the option whether to
+            // - ignore values that can't be serialized
+            // - return an error in the data such as
+            //   { "file_name": "test", "error": { "code": 1000, "message": "couldn't serialize" }
+            // - return a non-zero exit code
+            // - print information on stderr
+            Err(_) => None,
+            Ok(val) => Some(Ok((xattr_name, val.to_owned()))),
+        }
+        Encoding::Base64 => Some(Ok((xattr_name, base64::encode(&xattr_value)))),
+        Encoding::Escaped => {
+            let escaped: Vec<u8> = xattr_value
+                .into_iter()
+                .flat_map(std::ascii::escape_default).collect();
+            match str::from_utf8(&escaped) {
+                Err(_) => None,
+                Ok(val) => Some(Ok((xattr_name, val.to_owned()))),
+            }
+        }
+
+    }
+}
+
+fn build_attr_json_str_for_file(file_name: PathBuf, value_encoding: Encoding) -> Result<String> {
     let xattr_names = xattr::list::<&OsStr>(file_name.as_ref()).map_err(
         |e| Error::ListExtAttrNames(file_name.clone(), e))?;
 
@@ -56,10 +94,7 @@ fn build_attr_json_str_for_file(file_name: PathBuf) -> Result<String> {
     let valid_utf8_attrs = valid_utf8_xattr_names.filter_map(|xattr_name| {
         match xattr::get::<&OsStr, &OsStr>(file_name.as_ref(), xattr_name.as_ref()) {
             Err(e) => Some(Err(Error::GetExtAttrValue(xattr_name, file_name.clone(), e))),
-            Ok(Some(xattr_value)) => match str::from_utf8(&xattr_value) {
-                Err(_) => None, // filter out non-utf-8-representable attribute values
-                Ok(val) => Some(Ok((xattr_name, val.to_owned()))),
-            },
+            Ok(Some(xattr_value)) => encode_xattr_value(xattr_name, xattr_value, value_encoding),
             Ok(None) => Some(Err(Error::NoExtAttrValue(xattr_name, file_name.clone())))
         }
     }).collect::<Result<FileAttrsMap>>()?;
@@ -82,13 +117,13 @@ async fn main() -> ExitCode {
         let first = first.to_owned();
         stream.push_back(
             tokio::spawn(async move {
-                build_attr_json_str_for_file(first)
+                build_attr_json_str_for_file(first, args.encoding)
             })
         );
         for f in rest.to_owned() {
             stream.push_back(
                 tokio::spawn(async move {
-                    build_attr_json_str_for_file(f).map(|s| format!(",{s}"))
+                    build_attr_json_str_for_file(f, args.encoding).map(|s| format!(",{s}"))
                 })
             )
         }
