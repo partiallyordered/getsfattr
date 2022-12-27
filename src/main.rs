@@ -78,12 +78,20 @@ async fn main() -> ExitCode {
 
     print!("[");
 
-    for f in args.files {
+    if let Some((first, rest)) = args.files.split_first() {
+        let first = first.to_owned();
         stream.push_back(
             tokio::spawn(async move {
-                build_attr_json_str_for_file(f)
+                build_attr_json_str_for_file(first)
             })
-        )
+        );
+        for f in rest.to_owned() {
+            stream.push_back(
+                tokio::spawn(async move {
+                    build_attr_json_str_for_file(f).map(|s| format!(",{s}"))
+                })
+            )
+        }
     }
 
     while let Some(attrs) = stream.next().await {
