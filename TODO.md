@@ -12,15 +12,12 @@
 - lint
 - GH Actions build/release
 - Check license is compatible with dependencies
-- strip any imaginary windows support
-- performance
-  - is there a problem?
-  - things to try:
-    - io_uring
-      - not cross-platform- also, my understanding is that this is for queueing dependent syscalls,
-          not necessarily for concurrently processing a large number of syscalls, so the advantage
-          it *might* have is to remove or amortise syscall overhead for multiple syscalls
-- Mac support?
+- OS support
+  - Windows support? (i.e. explicit, with some GH actions tests or something)
+  - Mac support? (i.e. explicit, with some GH actions tests or something)
+  - Explicitly don't support Windows? (that's where the OsStr complexity comes from)
+  - Just ignore all extended attributes that can't be represented as utf-8? (this is the current
+      behaviour)
 - options?
   - output data types?
     - https://serde.rs/#data-formats
@@ -29,3 +26,10 @@
     - or just let users use CLI converters?
 - man page
 - help text
+- support attributes that can be represented as other than unicode- instead of the filter_map, use
+    a map that transforms control characters to a different, probably string representation;
+    probably the hexadecimal representation setfattr/getfattr use, e.g. \x0A for chr 0A
+    - https://github.com/serde-rs/json/issues/550
+- make calls to xattr::get concurrent?
+- some nix stuff in the readme
+  - `nix run 'github:partiallyordered/getsfattr *`
