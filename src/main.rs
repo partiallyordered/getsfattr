@@ -12,15 +12,27 @@ use thiserror::Error;
 
 #[derive(ValueEnum, Clone, Debug, Copy)]
 enum Encoding {
+    /// Escape attribute values per Rust's std::ascii::escape_default:
+    /// https://doc.rust-lang.org/std/ascii/fn.escape_default.html
     Escaped,
+    /// Encode attribute values as standard base64, using + and / for 62 and 63 per
+    /// https://www.rfc-editor.org/rfc/rfc3548#section-3
     Base64,
+    /// Encode attribute values as UTF-8
     Utf8,
 }
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 /// Get extended file attributes as JSON
+///
+/// Ignores extended file attribute names that cannot be represented as unicode. In practice, this
+/// means that all valid attribute names will be supported on Linux, MacOS, and Unix. UTF-8
+/// attribute names should still work on Windows.
 struct Args {
+    /// Extended attribute value encoding. Some values cannot be encoded as strings. The default
+    /// behaviour is to produce an error in-line in the output indicating that the value could not
+    /// be encoded. This behaviour can be controlled with the --serialize-errors flag.
     #[arg(short, long, default_value="escaped")]
     encoding: Encoding,
     /// Target files
