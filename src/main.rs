@@ -1,5 +1,6 @@
 use clap::{Parser, ValueEnum};
 use serde::Serialize;
+use tokio::task::JoinError;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
@@ -64,6 +65,8 @@ enum Error {
     NoExtAttrValue(String, PathBuf),
     #[error("Failed to serialize attributes to JSON for file {0}. Error: {1}")]
     FailedToSerializeAttrs(PathBuf, serde_json::Error),
+    #[error("Unhandled error from scheduling runtime: {0}")]
+    AsyncJoinError(JoinError),
 }
 
 type Result<T> = std::result::Result<T, Error>;
@@ -117,47 +120,44 @@ fn build_attr_json_str_for_file(file_name: PathBuf, value_encoding: Encoding) ->
     })).map_err(|e| Error::FailedToSerializeAttrs(file_name, e))
 }
 
-#[tokio::main]
-async fn main() -> ExitCode {
-    let args = Args::parse();
-
+async fn run(args: Args) -> Result<()> {
     let mut stream = FuturesOrdered::new();
 
     print!("[");
 
-    if let Some((first, rest)) = args.files.split_first() {
-        let first = first.to_owned();
+    for f in args.files {
         stream.push_back(
             tokio::spawn(async move {
-                build_attr_json_str_for_file(first, args.encoding)
+                build_attr_json_str_for_file(f, args.encoding)
             })
-        );
-        for f in rest.to_owned() {
-            stream.push_back(
-                tokio::spawn(async move {
-                    build_attr_json_str_for_file(f, args.encoding).map(|s| format!(",{s}"))
-                })
-            )
-        }
+        )
     }
 
-    while let Some(attrs) = stream.next().await {
-        match attrs {
-            Ok(Ok(attrs_inner)) => print!("{}", attrs_inner),
-            Ok(Err(e)) => {
-                eprintln!("Error!: {}", e);
-                return ExitCode::FAILURE;
-            }
-            Err(e) => {
-                eprintln!("Error!: {}", e);
-                return ExitCode::FAILURE;
-            }
+    if let Some(first_attrs) = stream.next().await {
+        let first_attrs = first_attrs.map_err(|e| Error::AsyncJoinError(e))??;
+        print!("{}", first_attrs);
+        while let Some(attrs) = stream.next().await {
+            let attrs = attrs.map_err(|e| Error::AsyncJoinError(e))??;
+            print!(",{}", attrs);
         }
     }
 
     println!("]");
 
-    ExitCode::SUCCESS
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() -> ExitCode {
+    let args = Args::parse();
+
+    match run(args).await {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("Error!: {}", e);
+            return ExitCode::FAILURE;
+        },
+    }
 }
 
 // Tests:
