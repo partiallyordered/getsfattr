@@ -1,3 +1,7 @@
+- option to flatten output, such that it appears like this:
+    [{"file_name":"todo.md","my_attr_1":"my_val_1","my_attr_2":"my_val_2"}]
+- jsonl output option- some tools handle jsonl and it's probably easier to parse one object per
+    line than to parse a huge array
 - setsfattr
   - take data in the same format we produce it from `getsfattr`
 - make cli like this (i.e. release three binaries: `sfattr`, `getsfattr` and `setfsattr`):

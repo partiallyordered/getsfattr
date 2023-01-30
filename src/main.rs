@@ -41,6 +41,7 @@ struct Args {
     files: Vec<PathBuf>,
     // TODO:
     // - ignore missing files
+    // - ignore unencodable values
     // - pretty-print output
     // - attr filters? (probably not- just do one thing well)
     // - traversal options? (probably not- just do one thing well)
@@ -169,3 +170,9 @@ async fn main() -> ExitCode {
 // - we print output for files with two attributes
 // - what do we do on missing files?
 // - what do we do on insufficient permissions?
+// - file names with e.g. emoji in them work
+// - attribute names with e.g. emoji in them work
+// - attribute values with e.g. emoji in them work
+// - file names with control characters in them work (if these are legal file names)
+// - attribute names with e.g. control characters in them work
+// - attribute values with e.g. control characters in them work
